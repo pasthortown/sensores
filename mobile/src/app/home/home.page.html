@@ -1,0 +1,22 @@
+<ion-content>
+  <ion-list>
+    <ion-item>
+      <ion-label position="floating">IP RASPBERRY</ion-label>
+      <ion-input [(ngModel)]="ip_raspberry"></ion-input>
+    </ion-item>
+    <ion-item *ngIf="ip_raspberry !== ''">
+      <ion-button expand="full" fill="outline" (click)="conectar()">CONECTAR</ion-button>
+    </ion-item>
+    <ion-item *ngIf="conectado">
+      <ion-label style="width:100%; text-align: center">OPCIONES</ion-label>
+    </ion-item>
+    <ion-item *ngIf="conectado">
+      <ion-button *ngIf="!encendido_led" style="width: 100%;" color="success" expand="full" fill="outline" (click)="led()">ENCENDER LED</ion-button>
+      <ion-button *ngIf="encendido_led" style="width: 100%;" color="dark" expand="full" fill="outline" (click)="led()">APAGAR LED</ion-button>
+    </ion-item>
+    <ion-item *ngIf="conectado">
+      <ion-button *ngIf="!encendido_relay" style="width: 100%;" color="success" expand="full" fill="outline" (click)="relay()">ENCENDER RELAY</ion-button>
+      <ion-button *ngIf="encendido_relay" style="width: 100%;" color="dark" expand="full" fill="outline" (click)="relay()">APAGAR RELAY</ion-button>
+    </ion-item>
+  </ion-list>
+</ion-content>
