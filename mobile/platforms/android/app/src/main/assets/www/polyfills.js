@@ -5807,8 +5807,8 @@ window.__Zone_disable_customElements = true;
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! /home/pasthor/lsdev/omega/sensores_firebase/mobile/src/polyfills.ts */"./src/polyfills.ts");
-module.exports = __webpack_require__(/*! /home/pasthor/lsdev/omega/sensores_firebase/mobile/node_modules/@angular-devkit/build-angular/src/angular-cli-files/models/jit-polyfills.js */"./node_modules/@angular-devkit/build-angular/src/angular-cli-files/models/jit-polyfills.js");
+__webpack_require__(/*! /home/proyectos/omega/sensores_firebase/mobile/src/polyfills.ts */"./src/polyfills.ts");
+module.exports = __webpack_require__(/*! /home/proyectos/omega/sensores_firebase/mobile/node_modules/@angular-devkit/build-angular/src/angular-cli-files/models/jit-polyfills.js */"./node_modules/@angular-devkit/build-angular/src/angular-cli-files/models/jit-polyfills.js");
 
 
 /***/ })
