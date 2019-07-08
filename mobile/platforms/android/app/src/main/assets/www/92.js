@@ -1,448 +1,224 @@
 (window["webpackJsonp"] = window["webpackJsonp"] || []).push([[92],{
 
-/***/ "./node_modules/@ionic/core/dist/esm/legacy/shadow-css-984bac74-549b16dd.js":
-/*!**********************************************************************************!*\
-  !*** ./node_modules/@ionic/core/dist/esm/legacy/shadow-css-984bac74-549b16dd.js ***!
-  \**********************************************************************************/
-/*! exports provided: ShadowCss, scopeCss */
+/***/ "./node_modules/@ionic/core/dist/esm/es5/build/chunk-7c632336.js":
+/*!***********************************************************************!*\
+  !*** ./node_modules/@ionic/core/dist/esm/es5/build/chunk-7c632336.js ***!
+  \***********************************************************************/
+/*! exports provided: a, b, c, d, e */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ShadowCss", function() { return ShadowCss; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "scopeCss", function() { return scopeCss; });
-/**
- * @license
- * Copyright Google Inc. All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
- *
- * This file is a port of shadowCSS from webcomponents.js to TypeScript.
- * https://github.com/webcomponents/webcomponentsjs/blob/4efecd7e0e/src/ShadowCSS/ShadowCSS.js
- * https://github.com/angular/angular/blob/master/packages/compiler/src/shadow_css.ts
- */
-function scopeCss(cssText, scopeId, commentOriginalSelector) {
-    var sc = new ShadowCss();
-    return sc.shimCssText(cssText, scopeId, scopeId + '-h', scopeId + '-s', commentOriginalSelector);
-}
-var ShadowCss = /** @class */ (function () {
-    function ShadowCss() {
-        this.strictStyling = true;
-    }
-    ShadowCss.prototype.shimCssText = function (cssText, scopeId, hostScopeId, slotScopeId, commentOriginalSelector) {
-        if (hostScopeId === void 0) { hostScopeId = ''; }
-        if (slotScopeId === void 0) { slotScopeId = ''; }
-        if (commentOriginalSelector === void 0) { commentOriginalSelector = false; }
-        var commentsWithHash = extractCommentsWithHash(cssText);
-        cssText = stripComments(cssText);
-        var orgSelectors = [];
-        if (commentOriginalSelector) {
-            var processCommentedSelector_1 = function (rule) {
-                var placeholder = "/*!@___" + orgSelectors.length + "___*/";
-                var comment = "/*!@" + rule.selector + "*/";
-                orgSelectors.push({ placeholder: placeholder, comment: comment });
-                rule.selector = placeholder + rule.selector;
-                return rule;
-            };
-            cssText = processRules(cssText, function (rule) {
-                if (rule.selector[0] !== '@') {
-                    return processCommentedSelector_1(rule);
-                }
-                else if (rule.selector.startsWith('@media') || rule.selector.startsWith('@supports') ||
-                    rule.selector.startsWith('@page') || rule.selector.startsWith('@document')) {
-                    rule.content = processRules(rule.content, processCommentedSelector_1);
-                    return rule;
-                }
-                return rule;
-            });
-        }
-        var scopedCssText = this._scopeCssText(cssText, scopeId, hostScopeId, slotScopeId, commentOriginalSelector);
-        cssText = [scopedCssText].concat(commentsWithHash).join('\n');
-        if (commentOriginalSelector) {
-            orgSelectors.forEach(function (_a) {
-                var placeholder = _a.placeholder, comment = _a.comment;
-                cssText = cssText.replace(placeholder, comment);
-            });
-        }
-        return cssText;
-    };
-    ShadowCss.prototype._scopeCssText = function (cssText, scopeId, hostScopeId, slotScopeId, commentOriginalSelector) {
-        // replace :host and :host-context -shadowcsshost and -shadowcsshost respectively
-        cssText = this._insertPolyfillHostInCssText(cssText);
-        cssText = this._convertColonHost(cssText);
-        cssText = this._convertColonHostContext(cssText);
-        cssText = this._convertColonSlotted(cssText, slotScopeId);
-        cssText = this._convertShadowDOMSelectors(cssText);
-        if (scopeId) {
-            cssText = this._scopeSelectors(cssText, scopeId, hostScopeId, slotScopeId, commentOriginalSelector);
-        }
-        cssText = cssText.replace(/-shadowcsshost-no-combinator/g, "." + hostScopeId);
-        cssText = cssText.replace(/>\s*\*\s+([^{, ]+)/gm, ' $1 ');
-        return cssText.trim();
-    };
-    /*
-     * convert a rule like :host(.foo) > .bar { }
-     *
-     * to
-     *
-     * .foo<scopeName> > .bar
-    */
-    ShadowCss.prototype._convertColonHost = function (cssText) {
-        return this._convertColonRule(cssText, _cssColonHostRe, this._colonHostPartReplacer);
-    };
-    /*
-   * convert a rule like ::slotted(.foo) { }
-  */
-    ShadowCss.prototype._convertColonSlotted = function (cssText, slotAttr) {
-        var regExp = _cssColonSlottedRe;
-        return cssText.replace(regExp, function () {
-            var m = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                m[_i] = arguments[_i];
-            }
-            if (m[2]) {
-                var compound = m[2].trim();
-                var suffix = m[3];
-                var sel = '.' + slotAttr + ' > ' + compound + suffix;
-                return sel;
-            }
-            else {
-                return _polyfillHostNoCombinator + m[3];
-            }
-        });
-    };
-    /*
-     * convert a rule like :host-context(.foo) > .bar { }
-     *
-     * to
-     *
-     * .foo<scopeName> > .bar, .foo scopeName > .bar { }
-     *
-     * and
-     *
-     * :host-context(.foo:host) .bar { ... }
-     *
-     * to
-     *
-     * .foo<scopeName> .bar { ... }
-    */
-    ShadowCss.prototype._convertColonHostContext = function (cssText) {
-        return this._convertColonRule(cssText, _cssColonHostContextRe, this._colonHostContextPartReplacer);
-    };
-    ShadowCss.prototype._convertColonRule = function (cssText, regExp, partReplacer) {
-        // m[1] = :host(-context), m[2] = contents of (), m[3] rest of rule
-        return cssText.replace(regExp, function () {
-            var m = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                m[_i] = arguments[_i];
-            }
-            if (m[2]) {
-                var parts = m[2].split(',');
-                var r = [];
-                for (var i = 0; i < parts.length; i++) {
-                    var p = parts[i].trim();
-                    if (!p)
-                        break;
-                    r.push(partReplacer(_polyfillHostNoCombinator, p, m[3]));
-                }
-                return r.join(',');
-            }
-            else {
-                return _polyfillHostNoCombinator + m[3];
-            }
-        });
-    };
-    ShadowCss.prototype._colonHostContextPartReplacer = function (host, part, suffix) {
-        if (part.indexOf(_polyfillHost) > -1) {
-            return this._colonHostPartReplacer(host, part, suffix);
-        }
-        else {
-            return host + part + suffix + ', ' + part + ' ' + host + suffix;
-        }
-    };
-    ShadowCss.prototype._colonHostPartReplacer = function (host, part, suffix) {
-        return host + part.replace(_polyfillHost, '') + suffix;
-    };
-    /*
-     * Convert combinators like ::shadow and pseudo-elements like ::content
-     * by replacing with space.
-    */
-    ShadowCss.prototype._convertShadowDOMSelectors = function (cssText) {
-        return _shadowDOMSelectorsRe.reduce(function (result, pattern) { return result.replace(pattern, ' '); }, cssText);
-    };
-    // change a selector like 'div' to 'name div'
-    ShadowCss.prototype._scopeSelectors = function (cssText, scopeSelector, hostSelector, slotSelector, commentOriginalSelector) {
-        var _this = this;
-        return processRules(cssText, function (rule) {
-            var selector = rule.selector;
-            var content = rule.content;
-            if (rule.selector[0] !== '@') {
-                selector =
-                    _this._scopeSelector(rule.selector, scopeSelector, hostSelector, slotSelector, _this.strictStyling);
-            }
-            else if (rule.selector.startsWith('@media') || rule.selector.startsWith('@supports') ||
-                rule.selector.startsWith('@page') || rule.selector.startsWith('@document')) {
-                content = _this._scopeSelectors(rule.content, scopeSelector, hostSelector, slotSelector, commentOriginalSelector);
-            }
-            selector = selector.replace(/\s{2,}/g, ' ').trim();
-            return new CssRule(selector, content);
-        });
-    };
-    ShadowCss.prototype._scopeSelector = function (selector, scopeSelector, hostSelector, slotSelector, strict) {
-        var _this = this;
-        return selector.split(',')
-            .map(function (shallowPart) {
-            if (slotSelector && shallowPart.indexOf('.' + slotSelector) > -1) {
-                return shallowPart.trim();
-            }
-            if (_this._selectorNeedsScoping(shallowPart, scopeSelector)) {
-                return strict ?
-                    _this._applyStrictSelectorScope(shallowPart, scopeSelector, hostSelector).trim() :
-                    _this._applySelectorScope(shallowPart, scopeSelector, hostSelector).trim();
-            }
-            else {
-                return shallowPart.trim();
-            }
-        })
-            .join(', ');
-    };
-    ShadowCss.prototype._selectorNeedsScoping = function (selector, scopeSelector) {
-        var re = this._makeScopeMatcher(scopeSelector);
-        return !re.test(selector);
-    };
-    ShadowCss.prototype._makeScopeMatcher = function (scopeSelector) {
-        var lre = /\[/g;
-        var rre = /\]/g;
-        scopeSelector = scopeSelector.replace(lre, '\\[').replace(rre, '\\]');
-        return new RegExp('^(' + scopeSelector + ')' + _selectorReSuffix, 'm');
-    };
-    ShadowCss.prototype._applySelectorScope = function (selector, scopeSelector, hostSelector) {
-        // Difference from webcomponents.js: scopeSelector could not be an array
-        return this._applySimpleSelectorScope(selector, scopeSelector, hostSelector);
-    };
-    // scope via name and [is=name]
-    ShadowCss.prototype._applySimpleSelectorScope = function (selector, scopeSelector, hostSelector) {
-        // In Android browser, the lastIndex is not reset when the regex is used in String.replace()
-        _polyfillHostRe.lastIndex = 0;
-        if (_polyfillHostRe.test(selector)) {
-            var replaceBy_1 = this.strictStyling ? "." + hostSelector : scopeSelector;
-            return selector
-                .replace(_polyfillHostNoCombinatorRe, function (_, selector) {
-                return selector.replace(/([^:]*)(:*)(.*)/, function (_, before, colon, after) {
-                    return before + replaceBy_1 + colon + after;
-                });
-            })
-                .replace(_polyfillHostRe, replaceBy_1 + ' ');
-        }
-        return scopeSelector + ' ' + selector;
-    };
-    ShadowCss.prototype._applyStrictSelectorScope = function (selector, scopeSelector, hostSelector) {
-        var _this = this;
-        var isRe = /\[is=([^\]]*)\]/g;
-        scopeSelector = scopeSelector.replace(isRe, function (_) {
-            var parts = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                parts[_i - 1] = arguments[_i];
-            }
-            return parts[0];
-        });
-        var className = '.' + scopeSelector;
-        var _scopeSelectorPart = function (p) {
-            var scopedP = p.trim();
-            if (!scopedP) {
-                return '';
-            }
-            if (p.indexOf(_polyfillHostNoCombinator) > -1) {
-                scopedP = _this._applySimpleSelectorScope(p, scopeSelector, hostSelector);
-            }
-            else {
-                // remove :host since it should be unnecessary
-                var t = p.replace(_polyfillHostRe, '');
-                if (t.length > 0) {
-                    var matches = t.match(/([^:]*)(:*)(.*)/);
-                    if (matches) {
-                        scopedP = matches[1] + className + matches[2] + matches[3];
-                    }
-                }
-            }
-            return scopedP;
-        };
-        var safeContent = new SafeSelector(selector);
-        selector = safeContent.content();
-        var scopedSelector = '';
-        var startIndex = 0;
-        var res;
-        var sep = /( |>|\+|~(?!=))\s*/g;
-        // If a selector appears before :host it should not be shimmed as it
-        // matches on ancestor elements and not on elements in the host's shadow
-        // `:host-context(div)` is transformed to
-        // `-shadowcsshost-no-combinatordiv, div -shadowcsshost-no-combinator`
-        // the `div` is not part of the component in the 2nd selectors and should not be scoped.
-        // Historically `component-tag:host` was matching the component so we also want to preserve
-        // this behavior to avoid breaking legacy apps (it should not match).
-        // The behavior should be:
-        // - `tag:host` -> `tag[h]` (this is to avoid breaking legacy apps, should not match anything)
-        // - `tag :host` -> `tag [h]` (`tag` is not scoped because it's considered part of a
-        //   `:host-context(tag)`)
-        var hasHost = selector.indexOf(_polyfillHostNoCombinator) > -1;
-        // Only scope parts after the first `-shadowcsshost-no-combinator` when it is present
-        var shouldScope = !hasHost;
-        while ((res = sep.exec(selector)) !== null) {
-            var separator = res[1];
-            var part_1 = selector.slice(startIndex, res.index).trim();
-            shouldScope = shouldScope || part_1.indexOf(_polyfillHostNoCombinator) > -1;
-            var scopedPart = shouldScope ? _scopeSelectorPart(part_1) : part_1;
-            scopedSelector += scopedPart + " " + separator + " ";
-            startIndex = sep.lastIndex;
-        }
-        var part = selector.substring(startIndex);
-        shouldScope = shouldScope || part.indexOf(_polyfillHostNoCombinator) > -1;
-        scopedSelector += shouldScope ? _scopeSelectorPart(part) : part;
-        // replace the placeholders with their original values
-        return safeContent.restore(scopedSelector);
-    };
-    ShadowCss.prototype._insertPolyfillHostInCssText = function (selector) {
-        selector = selector
-            .replace(_colonHostContextRe, _polyfillHostContext)
-            .replace(_colonHostRe, _polyfillHost)
-            .replace(_colonSlottedRe, _polyfillSlotted);
-        return selector;
-    };
-    return ShadowCss;
-}());
-var SafeSelector = /** @class */ (function () {
-    function SafeSelector(selector) {
-        var _this = this;
-        this.placeholders = [];
-        this.index = 0;
-        // Replaces attribute selectors with placeholders.
-        // The WS in [attr="va lue"] would otherwise be interpreted as a selector separator.
-        selector = selector.replace(/(\[[^\]]*\])/g, function (_, keep) {
-            var replaceBy = "__ph-" + _this.index + "__";
-            _this.placeholders.push(keep);
-            _this.index++;
-            return replaceBy;
-        });
-        // Replaces the expression in `:nth-child(2n + 1)` with a placeholder.
-        // WS and "+" would otherwise be interpreted as selector separators.
-        this._content = selector.replace(/(:nth-[-\w]+)(\([^)]+\))/g, function (_, pseudo, exp) {
-            var replaceBy = "__ph-" + _this.index + "__";
-            _this.placeholders.push(exp);
-            _this.index++;
-            return pseudo + replaceBy;
-        });
-    }
-    SafeSelector.prototype.restore = function (content) {
-        var _this = this;
-        return content.replace(/__ph-(\d+)__/g, function (_, index) { return _this.placeholders[+index]; });
-    };
-    SafeSelector.prototype.content = function () { return this._content; };
-    return SafeSelector;
-}());
-var _polyfillHost = '-shadowcsshost';
-var _polyfillSlotted = '-shadowcssslotted';
-// note: :host-context pre-processed to -shadowcsshostcontext.
-var _polyfillHostContext = '-shadowcsscontext';
-var _parenSuffix = ')(?:\\((' +
-    '(?:\\([^)(]*\\)|[^)(]*)+?' +
-    ')\\))?([^,{]*)';
-var _cssColonHostRe = new RegExp('(' + _polyfillHost + _parenSuffix, 'gim');
-var _cssColonHostContextRe = new RegExp('(' + _polyfillHostContext + _parenSuffix, 'gim');
-var _cssColonSlottedRe = new RegExp('(' + _polyfillSlotted + _parenSuffix, 'gim');
-var _polyfillHostNoCombinator = _polyfillHost + '-no-combinator';
-var _polyfillHostNoCombinatorRe = /-shadowcsshost-no-combinator([^\s]*)/;
-var _shadowDOMSelectorsRe = [
-    /::shadow/g,
-    /::content/g
-];
-var _selectorReSuffix = '([>\\s~+\[.,{:][\\s\\S]*)?$';
-var _polyfillHostRe = /-shadowcsshost/gim;
-var _colonHostRe = /:host/gim;
-var _colonSlottedRe = /::slotted/gim;
-var _colonHostContextRe = /:host-context/gim;
-var _commentRe = /\/\*\s*[\s\S]*?\*\//g;
-function stripComments(input) {
-    return input.replace(_commentRe, '');
-}
-var _commentWithHashRe = /\/\*\s*#\s*source(Mapping)?URL=[\s\S]+?\*\//g;
-function extractCommentsWithHash(input) {
-    return input.match(_commentWithHashRe) || [];
-}
-var _ruleRe = /(\s*)([^;\{\}]+?)(\s*)((?:{%BLOCK%}?\s*;?)|(?:\s*;))/g;
-var _curlyRe = /([{}])/g;
-var OPEN_CURLY = '{';
-var CLOSE_CURLY = '}';
-var BLOCK_PLACEHOLDER = '%BLOCK%';
-var CssRule = /** @class */ (function () {
-    function CssRule(selector, content) {
-        this.selector = selector;
-        this.content = content;
-    }
-    return CssRule;
-}());
-function processRules(input, ruleCallback) {
-    var inputWithEscapedBlocks = escapeBlocks(input);
-    var nextBlockIndex = 0;
-    return inputWithEscapedBlocks.escapedString.replace(_ruleRe, function () {
-        var m = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            m[_i] = arguments[_i];
-        }
-        var selector = m[2];
-        var content = '';
-        var suffix = m[4];
-        var contentPrefix = '';
-        if (suffix && suffix.startsWith('{' + BLOCK_PLACEHOLDER)) {
-            content = inputWithEscapedBlocks.blocks[nextBlockIndex++];
-            suffix = suffix.substring(BLOCK_PLACEHOLDER.length + 1);
-            contentPrefix = '{';
-        }
-        var rule = ruleCallback(new CssRule(selector, content));
-        return "" + m[1] + rule.selector + m[3] + contentPrefix + rule.content + suffix;
-    });
-}
-var StringWithEscapedBlocks = /** @class */ (function () {
-    function StringWithEscapedBlocks(escapedString, blocks) {
-        this.escapedString = escapedString;
-        this.blocks = blocks;
-    }
-    return StringWithEscapedBlocks;
-}());
-function escapeBlocks(input) {
-    var inputParts = input.split(_curlyRe);
-    var resultParts = [];
-    var escapedBlocks = [];
-    var bracketCount = 0;
-    var currentBlockParts = [];
-    for (var partIndex = 0; partIndex < inputParts.length; partIndex++) {
-        var part = inputParts[partIndex];
-        if (part === CLOSE_CURLY) {
-            bracketCount--;
-        }
-        if (bracketCount > 0) {
-            currentBlockParts.push(part);
-        }
-        else {
-            if (currentBlockParts.length > 0) {
-                escapedBlocks.push(currentBlockParts.join(''));
-                resultParts.push(BLOCK_PLACEHOLDER);
-                currentBlockParts = [];
-            }
-            resultParts.push(part);
-        }
-        if (part === OPEN_CURLY) {
-            bracketCount++;
-        }
-    }
-    if (currentBlockParts.length > 0) {
-        escapedBlocks.push(currentBlockParts.join(''));
-        resultParts.push(BLOCK_PLACEHOLDER);
-    }
-    return new StringWithEscapedBlocks(resultParts.join(''), escapedBlocks);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return getClassMap; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return openURL; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return createColorClasses; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return hostContext; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return createThemedClasses; });
+/* harmony import */ var _polyfills_tslib_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../polyfills/tslib.js */ "./node_modules/@ionic/core/dist/esm/es5/polyfills/tslib.js");
+function hostContext(t,e){return null!==e.closest(t)}function createColorClasses(t){var e;return"string"==typeof t&&t.length>0?((e={"ion-color":!0})["ion-color-"+t]=!0,e):void 0}function createThemedClasses(t,e){var r;return(r={})[e]=!0,r[e+"-"+t]=void 0!==t,r}function getClassList(t){return void 0!==t?(Array.isArray(t)?t:t.split(" ")).filter(function(t){return null!=t}).map(function(t){return t.trim()}).filter(function(t){return""!==t}):[]}function getClassMap(t){var e={};return getClassList(t).forEach(function(t){return e[t]=!0}),e}var SCHEME=/^[a-z][a-z0-9+\-.]*:/;function openURL(t,e,r,n){return _polyfills_tslib_js__WEBPACK_IMPORTED_MODULE_0__["__awaiter"](this,void 0,void 0,function(){var s;return _polyfills_tslib_js__WEBPACK_IMPORTED_MODULE_0__["__generator"](this,function(o){switch(o.label){case 0:return null==e||"#"===e[0]||SCHEME.test(e)?[3,2]:(s=t.document.querySelector("ion-router"))?(null!=r&&r.preventDefault(),[4,s.componentOnReady()]):[3,2];case 1:return o.sent(),[2,s.push(e,n)];case 2:return[2,!1]}})})}
+
+/***/ }),
+
+/***/ "./node_modules/@ionic/core/dist/esm/es5/build/raunowwy.entry.js":
+/*!***********************************************************************!*\
+  !*** ./node_modules/@ionic/core/dist/esm/es5/build/raunowwy.entry.js ***!
+  \***********************************************************************/
+/*! exports provided: IonSplitPane */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "IonSplitPane", function() { return SplitPane; });
+/* harmony import */ var _chunk_7c632336_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./chunk-7c632336.js */ "./node_modules/@ionic/core/dist/esm/es5/build/chunk-7c632336.js");
+var SPLIT_PANE_MAIN="split-pane-main",SPLIT_PANE_SIDE="split-pane-side",QUERY={xs:"(min-width: 0px)",sm:"(min-width: 576px)",md:"(min-width: 768px)",lg:"(min-width: 992px)",xl:"(min-width: 1200px)",never:""},SplitPane=function(){function e(){this.visible=!1,this.disabled=!1,this.when=QUERY.lg}return e.prototype.visibleChanged=function(e){var t={visible:e,isPane:this.isPane.bind(this)};this.ionSplitPaneVisible.emit(t)},e.prototype.componentDidLoad=function(){this.styleChildren(),this.updateState()},e.prototype.componentDidUnload=function(){this.rmL&&(this.rmL(),this.rmL=void 0)},e.prototype.updateState=function(){var e=this;if(!this.isServer)if(this.rmL&&(this.rmL(),this.rmL=void 0),this.disabled)this.visible=!1;else{var t=this.when;if("boolean"!=typeof t){var i=QUERY[t]||t;if(0!==i.length){var n=function(t){e.visible=t.matches},s=this.win.matchMedia(i);s.addListener(n),this.rmL=function(){return s.removeListener(n)},this.visible=s.matches}else this.visible=!1}else this.visible=t}},e.prototype.isPane=function(e){return!!this.visible&&e.parentElement===this.el&&e.classList.contains(SPLIT_PANE_SIDE)},e.prototype.styleChildren=function(){if(!this.isServer){for(var e=this.contentId,t=this.el.children,i=this.el.childElementCount,n=!1,s=0;s<i;s++){var a=t[s],r=void 0!==e?a.id===e:a.hasAttribute("main");if(r){if(n)return void console.warn("split pane can not have more than one main node");n=!0}setPaneClass(a,r)}n||console.warn("split pane could not found any main node")}},e.prototype.hostData=function(){return{class:Object.assign({},Object(_chunk_7c632336_js__WEBPACK_IMPORTED_MODULE_0__["e"])(this.mode,"split-pane"),{"split-pane-visible":this.visible})}},Object.defineProperty(e,"is",{get:function(){return"ion-split-pane"},enumerable:!0,configurable:!0}),Object.defineProperty(e,"properties",{get:function(){return{contentId:{type:String,attr:"content-id"},disabled:{type:Boolean,attr:"disabled",watchCallbacks:["updateState"]},el:{elementRef:!0},isServer:{context:"isServer"},visible:{state:!0,watchCallbacks:["visibleChanged"]},when:{type:"Any",attr:"when",watchCallbacks:["updateState"]},win:{context:"window"}}},enumerable:!0,configurable:!0}),Object.defineProperty(e,"events",{get:function(){return[{name:"ionSplitPaneVisible",method:"ionSplitPaneVisible",bubbles:!0,cancelable:!0,composed:!0}]},enumerable:!0,configurable:!0}),Object.defineProperty(e,"style",{get:function(){return".split-pane{left:0;right:0;top:0;bottom:0;display:-ms-flexbox;display:flex;position:absolute;-ms-flex-direction:row;flex-direction:row;-ms-flex-wrap:nowrap;flex-wrap:nowrap;contain:strict}.split-pane-visible>.split-pane-main,.split-pane-visible>.split-pane-side{left:0;right:0;top:0;bottom:0;position:relative;-ms-flex:1;flex:1;-webkit-box-shadow:none!important;box-shadow:none!important;z-index:0}.split-pane-visible>.split-pane-side:not(ion-menu),.split-pane-visible>ion-menu.split-pane-side.menu-enabled{display:-ms-flexbox;display:flex;-ms-flex-negative:0;flex-shrink:0}.split-pane-side:not(ion-menu){display:none}.split-pane-visible>.split-pane-side{-ms-flex-order:-1;order:-1}.split-pane-visible>.split-pane-side[side=end]{-ms-flex-order:1;order:1}.split-pane-md{--border:1px solid var(--ion-item-border-color,var(--ion-border-color,var(--ion-color-step-150,rgba(0,0,0,0.13))))}.split-pane-md.split-pane-visible>.split-pane-side{min-width:270px;max-width:28%;border-right:var(--border);border-left:0}.split-pane-md.split-pane-visible>.split-pane-side[side=end]{min-width:270px;max-width:28%;border-right:0;border-left:var(--border)}"},enumerable:!0,configurable:!0}),Object.defineProperty(e,"styleMode",{get:function(){return"md"},enumerable:!0,configurable:!0}),e}();function setPaneClass(e,t){var i,n;t?(i=SPLIT_PANE_MAIN,n=SPLIT_PANE_SIDE):(i=SPLIT_PANE_SIDE,n=SPLIT_PANE_MAIN);var s=e.classList;s.add(i),s.remove(n)}
+
+/***/ }),
+
+/***/ "./node_modules/@ionic/core/dist/esm/es5/polyfills/tslib.js":
+/*!******************************************************************!*\
+  !*** ./node_modules/@ionic/core/dist/esm/es5/polyfills/tslib.js ***!
+  \******************************************************************/
+/*! exports provided: __extends, __assign, __rest, __decorate, __param, __metadata, __awaiter, __generator, __exportStar, __values, __read, __spread, __await, __makeTemplateObject, __importStar, __importDefault */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__extends", function() { return __extends; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__assign", function() { return __assign; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__rest", function() { return __rest; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__decorate", function() { return __decorate; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__param", function() { return __param; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__metadata", function() { return __metadata; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__awaiter", function() { return __awaiter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__generator", function() { return __generator; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__exportStar", function() { return __exportStar; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__values", function() { return __values; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__read", function() { return __read; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__spread", function() { return __spread; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__await", function() { return __await; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__makeTemplateObject", function() { return __makeTemplateObject; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__importStar", function() { return __importStar; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__importDefault", function() { return __importDefault; });
+// REV: 9dd9aa322c893e5e0b3f1609b1126314ccf37bbb
+
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation. All rights reserved.
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the
+License at http://www.apache.org/licenses/LICENSE-2.0
+THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
+WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+MERCHANTABLITY OR NON-INFRINGEMENT.
+See the Apache Version 2.0 License for specific language governing permissions
+and limitations under the License.
+***************************************************************************** */
+/* global Reflect, Promise */
+
+var extendStatics = function(d, b) {
+  extendStatics = Object.setPrototypeOf ||
+      ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+      function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+  return extendStatics(d, b);
+};
+
+function __extends(d, b) {
+  extendStatics(d, b);
+  function __() { this.constructor = d; }
+  d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 }
 
+var __assign = function() {
+  __assign = Object.assign || function __assign(t) {
+      for (var s, i = 1, n = arguments.length; i < n; i++) {
+          s = arguments[i];
+          for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+      }
+      return t;
+  }
+  return __assign.apply(this, arguments);
+}
 
+function __rest(s, e) {
+  var t = {};
+  for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+      t[p] = s[p];
+  if (s != null && typeof Object.getOwnPropertySymbols === "function")
+      for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+          t[p[i]] = s[p[i]];
+  return t;
+}
+
+function __decorate(decorators, target, key, desc) {
+  var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+  if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+  else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+  return c > 3 && r && Object.defineProperty(target, key, r), r;
+}
+
+function __param(paramIndex, decorator) {
+  return function (target, key) { decorator(target, key, paramIndex); }
+}
+
+function __metadata(metadataKey, metadataValue) {
+  if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(metadataKey, metadataValue);
+}
+
+function __awaiter(thisArg, _arguments, P, generator) {
+  return new (P || (P = Promise))(function (resolve, reject) {
+      function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+      function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+      function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+      step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+}
+
+function __generator(thisArg, body) {
+  var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+  return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+  function verb(n) { return function (v) { return step([n, v]); }; }
+  function step(op) {
+      if (f) throw new TypeError("Generator is already executing.");
+      while (_) try {
+          if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+          if (y = 0, t) op = [op[0] & 2, t.value];
+          switch (op[0]) {
+              case 0: case 1: t = op; break;
+              case 4: _.label++; return { value: op[1], done: false };
+              case 5: _.label++; y = op[1]; op = [0]; continue;
+              case 7: op = _.ops.pop(); _.trys.pop(); continue;
+              default:
+                  if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                  if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                  if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                  if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                  if (t[2]) _.ops.pop();
+                  _.trys.pop(); continue;
+          }
+          op = body.call(thisArg, _);
+      } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+      if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+  }
+}
+
+function __exportStar(m, exports) {
+  for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+
+function __values(o) {
+  var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+  if (m) return m.call(o);
+  return {
+      next: function () {
+          if (o && i >= o.length) o = void 0;
+          return { value: o && o[i++], done: !o };
+      }
+  };
+}
+
+function __read(o, n) {
+  var m = typeof Symbol === "function" && o[Symbol.iterator];
+  if (!m) return o;
+  var i = m.call(o), r, ar = [], e;
+  try {
+      while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+  }
+  catch (error) { e = { error: error }; }
+  finally {
+      try {
+          if (r && !r.done && (m = i["return"])) m.call(i);
+      }
+      finally { if (e) throw e.error; }
+  }
+  return ar;
+}
+
+function __spread() {
+  for (var ar = [], i = 0; i < arguments.length; i++)
+      ar = ar.concat(__read(arguments[i]));
+  return ar;
+}
+
+function __await(v) {
+  return this instanceof __await ? (this.v = v, this) : new __await(v);
+}
+
+function __makeTemplateObject(cooked, raw) {
+  if (Object.defineProperty) { Object.defineProperty(cooked, "raw", { value: raw }); } else { cooked.raw = raw; }
+  return cooked;
+};
+
+function __importStar(mod) {
+  if (mod && mod.__esModule) return mod;
+  var result = {};
+  if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+  result.default = mod;
+  return result;
+}
+
+function __importDefault(mod) {
+  return (mod && mod.__esModule) ? mod : { default: mod };
+}
 
 /***/ })
 

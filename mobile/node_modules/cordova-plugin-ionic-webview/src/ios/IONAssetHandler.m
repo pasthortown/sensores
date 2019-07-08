@@ -1,6 +1,5 @@
 #import "IONAssetHandler.h"
 #import <MobileCoreServices/MobileCoreServices.h>
-#import "CDVWKWebViewEngine.h"
 
 @implementation IONAssetHandler
 
@@ -8,23 +7,13 @@
     self.basePath = assetPath;
 }
 
-- (instancetype)initWithBasePath:(NSString *)basePath andScheme:(NSString *)scheme {
-    self = [super init];
-    if (self) {
-        _basePath = basePath;
-        _scheme = scheme;
-    }
-    return self;
-}
-
 - (void)webView:(WKWebView *)webView startURLSchemeTask:(id <WKURLSchemeTask>)urlSchemeTask
-{
+API_AVAILABLE(ios(11.0)){
     NSString * startPath = @"";
     NSURL * url = urlSchemeTask.request.URL;
     NSString * stringToLoad = url.path;
     NSString * scheme = url.scheme;
-
-    if ([scheme isEqualToString:self.scheme]) {
+    if ([scheme isEqualToString:@"ionic"]) {
         if ([stringToLoad hasPrefix:@"/_app_file_"]) {
             startPath = [stringToLoad stringByReplacingOccurrencesOfString:@"/_app_file_" withString:@""];
         } else {
@@ -36,7 +25,7 @@
             }
         }
     }
-
+    
     NSData * data = [[NSData alloc] initWithContentsOfFile:startPath];
     NSInteger statusCode = 200;
     if (!data) {
@@ -58,8 +47,7 @@
 
 }
 
-- (void)webView:(nonnull WKWebView *)webView stopURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask
-{
+- (void)webView:(nonnull WKWebView *)webView stopURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask  API_AVAILABLE(ios(11.0)){
     NSLog(@"stop");
 }
 
